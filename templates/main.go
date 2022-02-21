@@ -13,7 +13,7 @@ import (
 var tpl *template.Template
 
 func init() {
-	tpl = template.Must(template.ParseGlob("templates/*.html"))
+	tpl = template.Must(template.ParseFiles("templates/*.html"))
 }
 
 var (
@@ -155,6 +155,18 @@ func getData(w http.ResponseWriter, r *http.Request) {
 	bandInfo.dates = UnmarshalDates()
 	bandInfo.relations = UnmarshalRel()
 
+	f1, err := os.Create("index.html")
+	if err != nil {
+		log.Fatal("ddd", err)
+	}
+
+	defer f1.Close()
+
+	err = tpl.ExecuteTemplate(f1, "index.html", bandInfo)
+	if err != nil {
+		panic(err)
+	}
+
 	for i := range bandInfo.artist {
 		fmt.Println(bandInfo.artist[i])
 		fmt.Println(bandInfo.location[i])
@@ -163,37 +175,13 @@ func getData(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-=-=-=-=-=-=-=-")
 
 	}
-	tpl.ExecuteTemplate(w, "index.html", bandInfo)
+	tpl.Execute(w, bandInfo)
 
 }
 
 func main() {
 
-
-	var bandInfo GroupieTracker
-
-	bandInfo.location = UnmarshalLocation()
-	bandInfo.artist = UnmarshalArtist()
-	bandInfo.dates = UnmarshalDates()
-	bandInfo.relations = UnmarshalRel()
-
-
-
-
-	f1, err := os.Create("index.html")
-	if err != nil{
-		log.Fatal("ddd",err)
-	}
-
-	defer f1.Close()
-
-	err = tpl.ExecuteTemplate(f1,"index.html", bandInfo)
-	if err !=nil {
-		panic(err)
-	}
-
-	http.HandleFunc("/index.html", getData)
-	fmt.Println("Starting the server on :9090...")
+	http.HandleFunc("/", getData)
 	log.Fatal(http.ListenAndServe(":9090", nil))
 
 }
