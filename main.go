@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+	
 )
 
 var tpl *template.Template
@@ -24,10 +24,10 @@ var (
 )
 
 type GroupieTracker struct {
-	artist    []artist
-	location  []locations
-	dates     []dates
-	relations []relations
+	Artist    []artist
+	Location  []locations
+	Dates     []dates
+	Relations []relations
 }
 
 type artist struct {
@@ -66,7 +66,7 @@ type dates struct {
 	Dates []string `json:"dates"`
 }
 
-func UnmarshalArtist() []artist {
+func unmarshalArtist() []artist {
 
 	resp, err := http.Get(Artists)
 	if err != nil {
@@ -87,7 +87,7 @@ func UnmarshalArtist() []artist {
 
 }
 
-func UnmarshalLocation() []locations {
+func unmarshalLocation() []locations {
 	resp, err := http.Get(Locations)
 	if err != nil {
 		log.Fatalln(err)
@@ -107,7 +107,7 @@ func UnmarshalLocation() []locations {
 
 }
 
-func UnmarshalDates() []dates {
+func unmarshalDates() []dates {
 	resp, err := http.Get(Dates)
 	if err != nil {
 		log.Fatalln(err)
@@ -126,7 +126,7 @@ func UnmarshalDates() []dates {
 	return data.Index
 }
 
-func UnmarshalRel() []relations {
+func unmarshalRel() []relations {
 	resp, err := http.Get(Relations)
 	if err != nil {
 		log.Fatalln(err)
@@ -148,52 +148,34 @@ func UnmarshalRel() []relations {
 
 func getData(w http.ResponseWriter, r *http.Request) {
 
+
 	var bandInfo GroupieTracker
 
-	bandInfo.location = UnmarshalLocation()
-	bandInfo.artist = UnmarshalArtist()
-	bandInfo.dates = UnmarshalDates()
-	bandInfo.relations = UnmarshalRel()
+	bandInfo.Location = unmarshalLocation()
+	bandInfo.Artist = unmarshalArtist()
+	bandInfo.Dates = unmarshalDates()
+	bandInfo.Relations = unmarshalRel()
+	
 
-	for i := range bandInfo.artist {
-		fmt.Println(bandInfo.artist[i])
-		fmt.Println(bandInfo.location[i])
-		fmt.Println(bandInfo.dates[i])
-		fmt.Println(bandInfo.relations[i])
+	/*for i := range bandInfo.Artist {
+		fmt.Println(bandInfo.Artist[i])
+		fmt.Println(bandInfo.Location[i])
+		fmt.Println(bandInfo.Dates[i])
+		fmt.Println(bandInfo.Relations[i])
 		fmt.Println("-=-=-=-=-=-=-=-")
-
+*/
+tpl.ExecuteTemplate(w, "index.html", bandInfo)
 	}
-	tpl.ExecuteTemplate(w, "index.html", bandInfo)
 
-}
+
+	
+
 
 func main() {
 
-
-	var bandInfo GroupieTracker
-
-	bandInfo.location = UnmarshalLocation()
-	bandInfo.artist = UnmarshalArtist()
-	bandInfo.dates = UnmarshalDates()
-	bandInfo.relations = UnmarshalRel()
-
-
-
-
-	f1, err := os.Create("index.html")
-	if err != nil{
-		log.Fatal("ddd",err)
-	}
-
-	defer f1.Close()
-
-	err = tpl.ExecuteTemplate(f1,"index.html", bandInfo)
-	if err !=nil {
-		panic(err)
-	}
-
 	http.HandleFunc("/index.html", getData)
 	fmt.Println("Starting the server on :9090...")
+	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("./templates"))))
 	log.Fatal(http.ListenAndServe(":9090", nil))
 
 }
