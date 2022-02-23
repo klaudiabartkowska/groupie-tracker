@@ -9,24 +9,21 @@
 </head>
 
 <body>
-      <form action="index.html" method = "post">
+   <form action="index.html" method = "post">
 
-      <main id="main">
-         <div class="band">
-              {{range .Artist}}
-              <img src = {{.Image}} alt="">
-         
-           <div class="band-info">
-              <h3>{{.Name}}</h3> 
-         
-            </div>
-            <div class="overview">
-               <h3>{{.Members}}</h3>
-               {{end}}
-              
-            </div>
-         </div> 
-      </main>
+         {{range .Artist}}
+      <div class="container-1">
+         <div class="box-1">
+            <a href = "index/artist/{{.Id}}"> <img src="{{.Image}}">
+            </a>
+      <h4>{{.Name}}</h4> 
+      </div>
+   </div>
+   
+
+   
+   {{end}} 
+
    </form>
 </body>
 

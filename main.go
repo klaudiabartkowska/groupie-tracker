@@ -7,14 +7,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	
 )
 
 var tpl *template.Template
 
+var tplArtist *template.Template
+
 func init() {
-	tpl = template.Must(template.ParseGlob("templates/*.html"))
+	tpl = template.Must(template.ParseGlob("templates/index.html"))
 }
+
 
 var (
 	Artists   = "https://groupietrackers.herokuapp.com/api/artists"
@@ -148,6 +150,24 @@ func unmarshalRel() []relations {
 
 func getData(w http.ResponseWriter, r *http.Request) {
 
+	var bandInfo GroupieTracker
+
+	bandInfo.Location = unmarshalLocation()
+	bandInfo.Artist = unmarshalArtist()
+	bandInfo.Dates = unmarshalDates()
+	bandInfo.Relations = unmarshalRel()
+
+	/*for i := range bandInfo.Artist {
+	fmt.Println(bandInfo.Artist[i])
+	fmt.Println(bandInfo.Location[i])
+	fmt.Println(bandInfo.Dates[i])
+	fmt.Println(bandInfo.Relations[i])
+	fmt.Println("-=-=-=-=-=-=-=-")
+	*/
+	tpl.ExecuteTemplate(w, "index.html", bandInfo)
+}
+
+func getArtist(w http.ResponseWriter, r *http.Request) {
 
 	var bandInfo GroupieTracker
 
@@ -155,25 +175,27 @@ func getData(w http.ResponseWriter, r *http.Request) {
 	bandInfo.Artist = unmarshalArtist()
 	bandInfo.Dates = unmarshalDates()
 	bandInfo.Relations = unmarshalRel()
-	
 
-	/*for i := range bandInfo.Artist {
-		fmt.Println(bandInfo.Artist[i])
-		fmt.Println(bandInfo.Location[i])
-		fmt.Println(bandInfo.Dates[i])
-		fmt.Println(bandInfo.Relations[i])
-		fmt.Println("-=-=-=-=-=-=-=-")
-*/
-tpl.ExecuteTemplate(w, "index.html", bandInfo)
-	}
+	if err := r.ParseForm(); err != nil {
+			return
+}
+ s :=(r.URL.Path)
+ fmt.Println(s)
 
+tplArtist.Execute(w, bandInfo)
+}
 
-	
 
 
 func main() {
+	
+	
+ tplArtist=template.Must(template.ParseFiles("templates/artist.html"))
 
-	http.HandleFunc("/index.html", getData)
+	http.HandleFunc("/index/artist", getArtist)
+	 http.HandleFunc("/index/artist/", getArtist)
+
+	http.HandleFunc("/index", getData)
 	fmt.Println("Starting the server on :9090...")
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("./templates"))))
 	log.Fatal(http.ListenAndServe(":9090", nil))
