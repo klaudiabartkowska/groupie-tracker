@@ -17,12 +17,13 @@ func init() {
 	tpl = template.Must(template.ParseGlob("templates/index.html"))
 }
 
-
 var (
-	Artists   = "https://groupietrackers.herokuapp.com/api/artists"
-	Locations = "https://groupietrackers.herokuapp.com/api/locations"
-	Dates     = "https://groupietrackers.herokuapp.com/api/dates"
-	Relations = "https://groupietrackers.herokuapp.com/api/relation"
+	Artists    = "https://groupietrackers.herokuapp.com/api/artists"
+	Locations  = "https://groupietrackers.herokuapp.com/api/locations"
+	Dates      = "https://groupietrackers.herokuapp.com/api/dates"
+	Relations  = "https://groupietrackers.herokuapp.com/api/relation"
+	middleHtml = "</head><body>"
+	endHtml    = "</body></html>"
 )
 
 type GroupieTracker struct {
@@ -175,27 +176,27 @@ func getArtist(w http.ResponseWriter, r *http.Request) {
 	bandInfo.Artist = unmarshalArtist()
 	bandInfo.Dates = unmarshalDates()
 	bandInfo.Relations = unmarshalRel()
-
-	if err := r.ParseForm(); err != nil {
-			return
+	r.ParseForm()
+	a := r.FormValue("infoA")
+	tplArtist.ExecuteTemplate(w, "artist.html", nil)
+	fmt.Fprintln(w, "<title>"+a+"</title>")
+	fmt.Fprintln(w, middleHtml)
+	for _, artist := range bandInfo.Artist {
+		if artist.Name == a {
+			fmt.Fprintln(w, "<h1>"+artist.Name+"</h1>")
+			fmt.Fprintln(w, "<img src = \""+artist.Image+"\">")
+		}
+	}
 }
- s :=(r.URL.Path)
- fmt.Println(s)
-
-tplArtist.Execute(w, bandInfo)
-}
-
-
 
 func main() {
-	
-	
- tplArtist=template.Must(template.ParseFiles("templates/artist.html"))
 
-	http.HandleFunc("/index/artist", getArtist)
-	 http.HandleFunc("/index/artist/", getArtist)
+	tplArtist = template.Must(template.ParseFiles("templates/artist.html"))
 
-	http.HandleFunc("/index", getData)
+	http.HandleFunc("/artist.html", getArtist)
+	http.HandleFunc("/", getData)
+
+	http.HandleFunc("/index.html", getData)
 	fmt.Println("Starting the server on :9090...")
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("./templates"))))
 	log.Fatal(http.ListenAndServe(":9090", nil))

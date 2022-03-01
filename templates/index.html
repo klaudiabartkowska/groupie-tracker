@@ -9,13 +9,16 @@
 </head>
 
 <body>
-   <form action="index.html" method = "post">
+  
 
          {{range .Artist}}
+          
       <div class="container-1">
          <div class="box-1">
-            <a href = "index/artist/{{.Id}}"> <img src="{{.Image}}">
-            </a>
+            <form action="/artist.html" id="{{.Name}}" method="POST">
+            <button type="submit" id><img src="{{.Image}}"></button>
+            <input name="infoA" type="hidden" type="text" value="{{.Name}}">
+         </form>
       <h4>{{.Name}}</h4> 
       </div>
    </div>
@@ -24,7 +27,7 @@
    
    {{end}} 
 
-   </form>
+   
 </body>
 
 </html>
