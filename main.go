@@ -7,6 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 )
 
 var tpl *template.Template
@@ -22,7 +25,7 @@ var (
 	Locations  = "https://groupietrackers.herokuapp.com/api/locations"
 	Dates      = "https://groupietrackers.herokuapp.com/api/dates"
 	Relations  = "https://groupietrackers.herokuapp.com/api/relation"
-	middleHtml = "</head><body>"
+	middleHtml = "</head><head><body>"
 	endHtml    = "</body></html>"
 )
 
@@ -176,17 +179,31 @@ func getArtist(w http.ResponseWriter, r *http.Request) {
 	bandInfo.Artist = unmarshalArtist()
 	bandInfo.Dates = unmarshalDates()
 	bandInfo.Relations = unmarshalRel()
-	r.ParseForm()
-	a := r.FormValue("infoA")
+
+	r.ParseForm() 
+
+	artistName := r.FormValue("infoArtist")
+	numArtist, err := strconv.Atoi(artistName)
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+		os.Exit(2)
+  }
+	
+
+	fmt.Println(string(numArtist))
+	
+
+	fmt.Fprintln(w, "<title>"+artistName+"</title>")
+	
+	fmt.Fprintln(w,"<h1>"+bandInfo.Artist[numArtist-1].Name+"</h1>") 
+	fmt.Fprint(w,"<img src="+ bandInfo.Artist[numArtist-1].Image+">")
+	fmt.Fprintln(w,"<br>",strings.Join( bandInfo.Artist[numArtist-1].Members, "\n"),"<br>")
+
+	fmt.Fprintln(w,"<h1>"+"Firts Album " +bandInfo.Artist[numArtist-1].FirstAlbum+"</h1>") 
+	
 	tplArtist.ExecuteTemplate(w, "artist.html", nil)
-	fmt.Fprintln(w, "<title>"+a+"</title>")
-	fmt.Fprintln(w, middleHtml)
-	for _, artist := range bandInfo.Artist {
-		if artist.Name == a {
-			fmt.Fprintln(w, "<h1>"+artist.Name+"</h1>")
-			fmt.Fprintln(w, "<img src = \""+artist.Image+"\">")
-		}
-	}
+
 }
 
 func main() {

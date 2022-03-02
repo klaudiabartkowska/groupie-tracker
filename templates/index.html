@@ -13,14 +13,14 @@
 
          {{range .Artist}}
           
-      <div class="container-1">
+         <div class="container-1">
+         <form action="/artist.html" id="{{.Name}}" method="POST">
          <div class="box-1">
-            <form action="/artist.html" id="{{.Name}}" method="POST">
             <button type="submit" id><img src="{{.Image}}"></button>
-            <input name="infoA" type="hidden" type="text" value="{{.Name}}">
-         </form>
-      <h4>{{.Name}}</h4> 
-      </div>
+            <input name="infoArtist" type="hidden" type="text" value="{{.Id}}">
+            <h4>{{.Name}}</h4> 
+         </div>
+      </form>
    </div>
    
 
