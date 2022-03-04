@@ -180,7 +180,7 @@ func getArtist(w http.ResponseWriter, r *http.Request) {
 	bandInfo.Dates = unmarshalDates()
 	bandInfo.Relations = unmarshalRel()
 
-	r.ParseForm() 
+	r.ParseForm()
 
 	artistName := r.FormValue("infoArtist")
 	numArtist, err := strconv.Atoi(artistName)
@@ -188,20 +188,29 @@ func getArtist(w http.ResponseWriter, r *http.Request) {
 		// handle error
 		fmt.Println(err)
 		os.Exit(2)
-  }
+	}
+
+	fmt.Println(numArtist)
+
+	fmt.Fprintln(w, "<title>"+"Groupie Tracker"+"</title>")
+
+	fmt.Fprintln(w, "<h6>"+bandInfo.Artist[numArtist-1].Name+"</h6>")
+	fmt.Fprint(w, "<h3>"+"<img src="+bandInfo.Artist[numArtist-1].Image+">"+"</h3>")
+	fmt.Fprint(w, "<h1>"+"Band Members"+"</h1>")
+	fmt.Fprintln(w, "<h2>"+strings.Join(bandInfo.Artist[numArtist-1].Members, " "+"<br>")+"</h2>")
+
+	fmt.Fprintln(w, "<h1>"+"Firts Album "+"</h1>"+"<h2>"+bandInfo.Artist[numArtist-1].FirstAlbum+"</h2>")
+	fmt.Fprintln(w, "<h1>"+"Concerts"+"</h1>")
+
+	
+	for _, m := range bandInfo.Relations{  //
+		for k, v := range m.DatesLocations {
+			fmt.Fprintln(w, k, v)
+		}
+		}
+	
 	
 
-	fmt.Println(string(numArtist))
-	
-
-	fmt.Fprintln(w, "<title>"+artistName+"</title>")
-	
-	fmt.Fprintln(w,"<h1>"+bandInfo.Artist[numArtist-1].Name+"</h1>") 
-	fmt.Fprint(w,"<img src="+ bandInfo.Artist[numArtist-1].Image+">")
-	fmt.Fprintln(w,"<br>",strings.Join( bandInfo.Artist[numArtist-1].Members, "\n"),"<br>")
-
-	fmt.Fprintln(w,"<h1>"+"Firts Album " +bandInfo.Artist[numArtist-1].FirstAlbum+"</h1>") 
-	
 	tplArtist.ExecuteTemplate(w, "artist.html", nil)
 
 }
