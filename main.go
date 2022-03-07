@@ -14,19 +14,17 @@ import (
 
 var tpl *template.Template
 
-var tplArtist *template.Template
+var tplArtists *template.Template
 
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/index.html"))
 }
 
 var (
-	Artists    = "https://groupietrackers.herokuapp.com/api/artists"
-	Locations  = "https://groupietrackers.herokuapp.com/api/locations"
-	Dates      = "https://groupietrackers.herokuapp.com/api/dates"
-	Relations  = "https://groupietrackers.herokuapp.com/api/relation"
-	middleHtml = "</head><head><body>"
-	endHtml    = "</body></html>"
+	Artists   = "https://groupietrackers.herokuapp.com/api/artists"
+	Locations = "https://groupietrackers.herokuapp.com/api/locations"
+	Dates     = "https://groupietrackers.herokuapp.com/api/dates"
+	Relations = "https://groupietrackers.herokuapp.com/api/relation"
 )
 
 type GroupieTracker struct {
@@ -43,6 +41,8 @@ type artist struct {
 	Members      []string `json:"members"`
 	CreationDate int      `json:"creationDate"`
 	FirstAlbum   string   `json:"firstAlbum"`
+	// Locations []string 
+	// DatesLocations map[string][]string 
 }
 
 type loc struct {
@@ -154,6 +154,11 @@ func unmarshalRel() []relations {
 
 func getData(w http.ResponseWriter, r *http.Request) {
 
+	// if r.Method != http.MethodPost {
+	// 	w.WriteHeader(405)
+	// 	return
+	// }
+
 	var bandInfo GroupieTracker
 
 	bandInfo.Location = unmarshalLocation()
@@ -171,9 +176,13 @@ func getData(w http.ResponseWriter, r *http.Request) {
 	tpl.ExecuteTemplate(w, "index.html", bandInfo)
 }
 
-func getArtist(w http.ResponseWriter, r *http.Request) {
+
+
+func getArtists(w http.ResponseWriter, r *http.Request) {
 
 	var bandInfo GroupieTracker
+
+
 
 	bandInfo.Location = unmarshalLocation()
 	bandInfo.Artist = unmarshalArtist()
@@ -199,27 +208,32 @@ func getArtist(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>"+"Band Members"+"</h1>")
 	fmt.Fprintln(w, "<h2>"+strings.Join(bandInfo.Artist[numArtist-1].Members, " "+"<br>")+"</h2>")
 
-	fmt.Fprintln(w, "<h1>"+"Firts Album "+"</h1>"+"<h2>"+bandInfo.Artist[numArtist-1].FirstAlbum+"</h2>")
+	fmt.Fprintln(w, "<h1>"+"First Album "+"</h1>"+"<h2>"+bandInfo.Artist[numArtist-1].FirstAlbum+"</h2>")
 	fmt.Fprintln(w, "<h1>"+"Concerts"+"</h1>")
 
-	
-	for _, m := range bandInfo.Relations{  //
-		for k, v := range m.DatesLocations {
-			fmt.Fprintln(w, k, v)
-		}
-		}
-	
-	
+   
 
-	tplArtist.ExecuteTemplate(w, "artist.html", nil)
+	for _, m := range bandInfo.Relations {
+		if numArtist == m.ID  {
+		for k, v := range m.DatesLocations {
+
+			fmt.Fprint(w,"<h5>",strings.ToUpper(k),"</h5>")
+			fmt.Fprintln(w,"<h2>",strings.Join(v,"<br>"+ " "),"</h2>")
+			
+		}
+	}
+	    
+}
+
+	tplArtists.ExecuteTemplate(w, "artist.html", bandInfo)
 
 }
 
 func main() {
 
-	tplArtist = template.Must(template.ParseFiles("templates/artist.html"))
+	tplArtists = template.Must(template.ParseFiles("templates/artist.html"))
 
-	http.HandleFunc("/artist.html", getArtist)
+	http.HandleFunc("/artist.html", getArtists)
 	http.HandleFunc("/", getData)
 
 	http.HandleFunc("/index.html", getData)
@@ -228,3 +242,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":9090", nil))
 
 }
+
+
+

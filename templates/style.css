@@ -123,3 +123,30 @@ h6 {
    background-color: #373b69;
 
 }
+
+h5 {
+
+   color: #ccc;
+   text-align:center;
+   font-family: 'Poppins', sans-serif;
+   font-size: 19px;
+   padding: 15px 20px;
+   margin-bottom: 10px;
+
+
+}
+
+a {
+ color : #ccc;
+ text-decoration: none;
+ font-size: 30px;
+
+
+}
+
+a:hover {
+color: #e26843;
+font-size: 35px;
+
+
+}
