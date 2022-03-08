@@ -15,7 +15,7 @@
          {{range .Artist}}
           
          <div class="container-1">
-         <form action="/artist.html" id="{{.Name}}" method="POST">
+         <form action="/artist" id="{{.Name}}" method="POST">
          <div class="box-1">
             <button type="submit" id><img src="{{.Image}}"></button>
             <input name="infoArtist" type="hidden" type="text" value="{{.Id}}">
