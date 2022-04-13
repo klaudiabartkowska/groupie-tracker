@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	// "os"
 	"strconv"
 	"strings"
+	//"strings"
 )
 
 var tpl *template.Template
@@ -41,8 +41,6 @@ type artist struct {
 	Members      []string `json:"members"`
 	CreationDate int      `json:"creationDate"`
 	FirstAlbum   string   `json:"firstAlbum"`
-	// Locations []string 
-	// DatesLocations map[string][]string 
 }
 
 type loc struct {
@@ -154,7 +152,7 @@ func unmarshalRel() []relations {
 
 func getData(w http.ResponseWriter, r *http.Request) {
 
-	if r.URL.Path != "/"{
+	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
@@ -166,26 +164,23 @@ func getData(w http.ResponseWriter, r *http.Request) {
 	bandInfo.Dates = unmarshalDates()
 	bandInfo.Relations = unmarshalRel()
 
-	/*for i := range bandInfo.Artist {
-	fmt.Println(bandInfo.Artist[i])
-	fmt.Println(bandInfo.Location[i])
-	fmt.Println(bandInfo.Dates[i])
-	fmt.Println(bandInfo.Relations[i])
-	fmt.Println("-=-=-=-=-=-=-=-")
-	*/
+	// for i := range bandInfo.Artist {
+	// fmt.Println(bandInfo.Artist[i])
+	// fmt.Println(bandInfo.Location[i])
+	// fmt.Println(bandInfo.Dates[i])
+	// fmt.Println(bandInfo.Relations[i])
+	// fmt.Println("-=-=-=-=-=-=-=-")
+
 	tpl.ExecuteTemplate(w, "index.html", bandInfo)
 }
 
-
-
 func getArtists(w http.ResponseWriter, r *http.Request) {
 
-	
-	if r.URL.Path != "/artist"{
+	if r.URL.Path != "/artist" {
 		http.NotFound(w, r)
 		return
 	}
-	
+
 	var bandInfo GroupieTracker
 
 	bandInfo.Location = unmarshalLocation()
@@ -193,59 +188,63 @@ func getArtists(w http.ResponseWriter, r *http.Request) {
 	bandInfo.Dates = unmarshalDates()
 	bandInfo.Relations = unmarshalRel()
 
-	if err := r.ParseForm(); err !=nil{
+	if err := r.ParseForm(); err != nil {
 		http.Error(w, "404", 400)
 	}
 
 	artistName := r.FormValue("infoArtist")
-	if artistName == ""{
+	if artistName == "" {
 		http.Error(w, " 400 Bad request", http.StatusBadRequest)
-		return 
+		return
 	}
 	numArtist, err := strconv.Atoi(artistName)
 	if err != nil {
 		// handle error
 		http.Error(w, " 400 Bad request", http.StatusBadRequest)
-		return 
-	
+		return
+
 	}
 
+	// right now the bandinfo struct has info for allartists
+	// need to narrow it to the individual
 
-	fmt.Fprintln(w, "<title>"+bandInfo.Artist[numArtist-1].Name+"</title>")
-
-									// Artist Name//
-	fmt.Fprintln(w, "<h6>"+bandInfo.Artist[numArtist-1].Name+"</h6>")
-
-	   						//Image// 
-	fmt.Fprint(w, "<h3>"+"<img src="+bandInfo.Artist[numArtist-1].Image+">"+"</h3>")
-
-	  							// Members//
-	fmt.Fprint(w, "<h1>"+"Band Members"+"</h1>")
-	fmt.Fprintln(w, "<h2>"+strings.Join(bandInfo.Artist[numArtist-1].Members, " "+"<br>")+"</h2>")
-                      // First Album //
-	fmt.Fprintln(w, "<h1>"+"First Album "+"</h1>"+"<h2>"+bandInfo.Artist[numArtist-1].FirstAlbum+"</h2>")
-
-								
-	fmt.Fprintln(w, "<h1>"+"Concerts"+"</h1>")
-
-							//Relations//
+	/* type GroupieTracker struct {
+		Artist    []artist
+		Location  []locations
+		Dates     []dates
+		Relations []relations
+	} */
 
 
-			
+
+	type IndividualArist struct {
+		Name     string
+		Image    string
+		Members  []string
+		Album    string
+		Concerts []string
+	}
+
+	con := []string{}
+
 	for _, m := range bandInfo.Relations {
-		if numArtist == m.ID  {
-		for k, v := range m.DatesLocations {
-
-
-			fmt.Fprint(w,"<h5>",strings.ToUpper(k),"</h5>")
-			fmt.Fprintln(w,"<h2>",strings.Join(v,"<br>"+ " "),"</h2>")
-			
+		if numArtist == m.ID {
+			for k, v := range m.DatesLocations {
+				con = append(con, k +" "+ strings.Join(v, " "))
+			}
 		}
 	}
-	    
-}
 
-	tplArtists.ExecuteTemplate(w, "artist.html", bandInfo)
+	Artist := &IndividualArist{
+		Name:     bandInfo.Artist[numArtist-1].Name,
+		Image:    bandInfo.Artist[numArtist-1].Image,
+		Members:  bandInfo.Artist[numArtist-1].Members,
+		Album:    bandInfo.Artist[numArtist-1].FirstAlbum,
+		Concerts: con,
+	}
+
+
+	tplArtists.ExecuteTemplate(w, "artist.html", Artist)
 
 }
 
@@ -262,6 +261,3 @@ func main() {
 	log.Fatal(http.ListenAndServe(":9090", nil))
 
 }
-
-
-
