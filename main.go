@@ -256,7 +256,7 @@ func main() {
 	http.HandleFunc("/", getData)
 
 	http.HandleFunc("/index.html", getData)
-	fmt.Println("Starting the server on :9090...")
+	fmt.Println("Starting the server on http://localhost:9090")
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("./templates"))))
 	log.Fatal(http.ListenAndServe(":9090", nil))
 
